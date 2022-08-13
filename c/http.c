@@ -9,6 +9,9 @@
 #define QUEUELIMIT 5
 
 #define RECVBUFFERSIZE 1024
+#define FILEBUFFERSIZE 1024
+
+char *docroot = "./www";
 
 struct httpMessage {
   char *requestLine;
@@ -108,6 +111,8 @@ static char *getRequestLineToken(char *requestLine, int pos) {
         token[k] = '\0';
       } else {
         k = 0;
+        st = i + 1;
+        continue;
       }
       st = i + 1;
     }
@@ -130,9 +135,41 @@ static void handleHeader(char **header, struct httpRequest *req) {
   req->header = header;
 }
 
+static char *readFile(char *path, int *fsize) {
+  FILE *fp;
+  char c;
+  char buf[FILEBUFFERSIZE];
+  char *body;
+  int size = 0;
+
+  fp = fopen(path, "r");
+  if (fp == NULL) {
+    printf("fopen() failed. path -> %s\n", path);
+    return NULL;
+  }
+
+  memset(buf, 0, FILEBUFFERSIZE);
+  while ((c = fgetc(fp)) != EOF) {
+    *(buf + size) = c;
+    size++;
+  }
+
+  body = (char *)malloc(size + 1);
+  body = memcpy(body, buf, size);
+  body[size] = '\0';
+
+  *fsize = size;
+  return body;
+}
+
 static struct httpResponse *createResponse(struct httpRequest *req) {
   char *reason_200 = "OK";
   char *reason_405 = "Method Not Allowed";
+  char *reason_500 = "Internal Server Error";
+  char *path;
+  char *body;
+  int strLen = 0;
+  int contentLength = 0;
 
   struct httpResponse *res;
   res = (struct httpResponse *)malloc(sizeof(struct httpResponse));
@@ -141,8 +178,27 @@ static struct httpResponse *createResponse(struct httpRequest *req) {
     res->statusCode = 405;
     res->reason = reason_405;
   } else {
-    res->statusCode = 200;
-    res->reason = reason_200;
+    // GET
+    if (strcmp(req->method, "GET") == 0) {
+      strLen = strlen(docroot);
+      strLen += strlen(req->path);
+      path = (char *)malloc(strLen);
+      memset(path, 0, strLen);
+      path = strcat(path, docroot);
+      path = strcat(path, req->path);
+      if ((body = readFile(path, &contentLength)) == NULL) {
+        res->statusCode = 500;
+        res->reason = reason_500;
+        res->body = NULL;
+      } else {
+        res->statusCode = 200;
+        res->reason = reason_200;
+        res->body = body;
+      }
+    } else {
+      res->statusCode = 200;
+      res->reason = reason_200;
+    }
   }
   res->version = req->version;
   return res;
@@ -166,6 +222,9 @@ static char *createHttpResponseMessage(struct httpResponse *res, int *size) {
   s += strlen(res->reason);
   s += strlen(crlf);
   s += strlen(crlf);
+  if (res->body != NULL) {
+    s += strlen(res->body);
+  }
 
   message = (char *)malloc(s);
 
@@ -186,6 +245,11 @@ static char *createHttpResponseMessage(struct httpResponse *res, int *size) {
   message[i++] = crlf[1];
   message[i++] = crlf[0];
   message[i++] = crlf[1];
+  if (res->body != NULL) {
+    for(j = 0; j < strlen(res->body); j++) {
+      message[i++] = res->body[j];
+    }
+  }
 
   *size = s;
   return message;
