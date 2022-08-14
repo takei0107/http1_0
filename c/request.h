@@ -4,22 +4,11 @@
 #define QUEUELIMIT 5
 #define RECVBUFFERSIZE 1024
 
-struct httpMessage {
-  char *requestLine;
-  char **header;
-  char *body;
-};
+#include "./httpType.h"
 
 struct bufferOffset {
   char *buffer;
   int offset;
-};
-struct httpRequest {
-  char *method;
-  char *path;
-  char *version;
-  char **header;
-  char *body;
 };
 
 struct httpRequest *handleHttpRequestMessage(char *buffer, int bufsize,

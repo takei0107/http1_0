@@ -1,10 +1,9 @@
-#include "./response.h"
-#include "./io.h"
-#include "./request.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "./response.h"
+#include "./io.h"
 
 static char *docroot = "./www";
 

@@ -1,12 +1,6 @@
 #ifndef RESPONSE_H
 
-struct httpResponse {
-  char *version;
-  short statusCode;
-  char *reason;
-  char **header;
-  char *body;
-};
+#include "./httpType.h"
 
 char *createHttpResponseMessage(struct httpRequest *req, int *size);
 
