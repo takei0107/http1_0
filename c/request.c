@@ -114,7 +114,6 @@ struct httpRequest *handleHttpRequestMessage(char *buffer, int bufsize,
   char *line;
   int bodysize;
   struct httpRequest *req;
-  struct httpResponse *res;
 
   bo.offset = 0;
   bo.buffer = buffer;

@@ -16,8 +16,6 @@ void startServer() {
 
   unsigned int clntLen; // size of clntAddr
 
-  char **lines;
-
   struct httpRequest *req;
   int resSize;
 
