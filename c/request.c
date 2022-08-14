@@ -98,6 +98,10 @@ static void handleHeader(char **header, struct httpRequest *req) {
   req->header = header;
 }
 
+static void handleBody(char *body, struct httpRequest *req) {
+  req->body = body;
+}
+
 struct httpRequest *handleHttpRequestMessage(char *buffer, int bufsize,
                                              int clntSock) {
   int i;
@@ -171,6 +175,7 @@ struct httpRequest *handleHttpRequestMessage(char *buffer, int bufsize,
   handleRequestLine(hm.requestLine, req);
   free(requestLine);
   handleHeader(hm.header, req);
+  handleBody(hm.body, req);
 
   return req;
 }

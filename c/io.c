@@ -13,6 +13,7 @@ char *readFile(char *path, int *fsize) {
 
   fp = fopen(path, "r");
   if (fp == NULL) {
+    fclose(fp);
     printf("fopen() failed. path -> %s\n", path);
     return NULL;
   }
@@ -27,6 +28,27 @@ char *readFile(char *path, int *fsize) {
   body = memcpy(body, buf, size);
   body[size] = '\0';
 
+  fclose(fp);
   *fsize = size;
+  return body;
+}
+
+char *createFile(char *path, char *body) {
+  FILE *fp;
+
+  fp = fopen(path, "w");
+  if (fp == NULL) {
+    fclose(fp);
+    printf("fopen() failed. path -> %s\n", path);
+    return NULL;
+  }
+
+  if (fputs(body, fp) == EOF) {
+    fclose(fp);
+    printf("fputs() failed. path -> %s\n", path);
+    return NULL;
+  }
+
+  fclose(fp);
   return body;
 }

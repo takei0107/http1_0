@@ -1,49 +1,73 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
-#include "./response.h"
 #include "./io.h"
+#include "./response.h"
+#include "./util.h"
 
 static char *docroot = "./www";
 
 static struct httpResponse *createResponse(struct httpRequest *req) {
   char *reason_200 = "OK";
+  char *reason_201 = "Created";
   char *reason_405 = "Method Not Allowed";
   char *reason_500 = "Internal Server Error";
   char *path;
   char *body;
+  time_t tm;
+  char *tl;
   int strLen = 0;
   int contentLength = 0;
 
   struct httpResponse *res;
   res = (struct httpResponse *)malloc(sizeof(struct httpResponse));
 
-  if ((strcmp(req->method, "GET") != 0) && (strcmp(req->method, "HEAD"))) {
-    res->statusCode = 405;
-    res->reason = reason_405;
-  } else {
-    // GET
-    if (strcmp(req->method, "GET") == 0) {
-      strLen = strlen(docroot);
-      strLen += strlen(req->path);
-      path = (char *)malloc(strLen);
-      memset(path, 0, strLen);
-      path = strcat(path, docroot);
-      path = strcat(path, req->path);
-      if ((body = readFile(path, &contentLength)) == NULL) {
-        res->statusCode = 500;
-        res->reason = reason_500;
-        res->body = NULL;
-      } else {
-        res->statusCode = 200;
-        res->reason = reason_200;
-        res->body = body;
-      }
+  // GET
+  if (strcmp(req->method, "GET") == 0) {
+    strLen = strlen(docroot);
+    strLen += strlen(req->path);
+    path = (char *)malloc(strLen);
+    memset(path, 0, strLen);
+    path = strcat(path, docroot);
+    path = strcat(path, req->path);
+    if ((body = readFile(path, &contentLength)) == NULL) {
+      res->statusCode = 500;
+      res->reason = reason_500;
+      res->body = NULL;
     } else {
       res->statusCode = 200;
       res->reason = reason_200;
+      res->body = body;
     }
+    // POST
+  } else if (strcmp(req->method, "POST") == 0) {
+    tm = time(NULL);
+    tl = ltoa(tm);
+    strLen = strlen(docroot);
+    strLen += strlen(req->path);
+    strLen++;             // path separator
+    strLen += strlen(tl); // new file name
+    path = (char *)malloc(strLen);
+    memset(path, 0, strLen);
+    path = strcat(path, docroot);
+    path = strcat(path, req->path);
+    path = strcat(path, "/");
+    path = strcat(path, tl);
+    if (createFile(path, req->body) == NULL) {
+      res->statusCode = 500;
+      res->reason = reason_500;
+      res->body = NULL;
+    } else {
+      res->statusCode = 201;
+      res->reason = reason_201;
+     // FIXME test
+      res->body = path;
+    }
+  } else {
+    res->statusCode = 405;
+    res->reason = reason_405;
   }
   res->version = req->version;
   return res;
