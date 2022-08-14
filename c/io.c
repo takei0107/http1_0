@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define FILEBUFFERSIZE 1024
+#include "./io.h"
 
 char *readFile(char *path, int *fsize) {
   FILE *fp;

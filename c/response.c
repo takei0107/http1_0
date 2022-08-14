@@ -1,18 +1,12 @@
+#include "./response.h"
+#include "./io.h"
+#include "./request.h"
+
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-#include "./request.c"
-#include "./io.c"
-
-char *docroot = "./www";
-
-struct httpResponse {
-  char *version;
-  short statusCode;
-  char *reason;
-  char **header;
-  char *body;
-};
+static char *docroot = "./www";
 
 static struct httpResponse *createResponse(struct httpRequest *req) {
   char *reason_200 = "OK";
@@ -101,7 +95,7 @@ char *createHttpResponseMessage(struct httpRequest *req, int *size) {
   message[i++] = crlf[0];
   message[i++] = crlf[1];
   if (res->body != NULL) {
-    for(j = 0; j < strlen(res->body); j++) {
+    for (j = 0; j < strlen(res->body); j++) {
       message[i++] = res->body[j];
     }
   }

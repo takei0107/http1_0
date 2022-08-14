@@ -1,23 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct httpMessage {
-  char *requestLine;
-  char **header;
-  char *body;
-};
-
-struct bufferOffset {
-  char *buffer;
-  int offset;
-};
-struct httpRequest {
-  char *method;
-  char *path;
-  char *version;
-  char **header;
-  char *body;
-};
+#include "./request.h"
 
 static int getLineLenToCrlf(struct bufferOffset *bo, int bufsize) {
   char *buffer;
@@ -114,7 +98,8 @@ static void handleHeader(char **header, struct httpRequest *req) {
   req->header = header;
 }
 
-struct httpRequest *handleHttpRequestMessage(char *buffer, int bufsize, int clntSock) {
+struct httpRequest *handleHttpRequestMessage(char *buffer, int bufsize,
+                                             int clntSock) {
   int i;
   int j;
   int lineLen;

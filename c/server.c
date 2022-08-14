@@ -4,11 +4,8 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "./response.c"
-
-#define PORT 8080
-#define QUEUELIMIT 5
-#define RECVBUFFERSIZE 1024
+#include "./request.h"
+#include "./response.h"
 
 void startServer() {
   int servSock; // server socket
